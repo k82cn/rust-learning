@@ -1,0 +1,6 @@
+package component:adder;
+
+/// An example world for the component to target.
+world example {
+    export add: func(x: s32, y: s32) -> s32;
+}

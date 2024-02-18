@@ -17,3 +17,6 @@ vendor/
 .idea/
 .vscode/
 target/
+
+# Python cache
+__pycache__/

@@ -12,11 +12,19 @@ def service(fn):
         dill.dump(fn, file)
 
     def service_future(*args, **kwargs):
+        with open('service_args.pkl', 'wb') as file:
+            dill.dump(args, file)
+
+        with open('service_kwargs.pkl', 'wb') as file:
+            dill.dump(kwargs, file)
+
         with open('service_input.pkl', 'wb') as file:
             dill.dump((args, kwargs), file)
 
-        for k, v in kwargs.items():
-            ret = fn(*args, **kwargs)
+        ret = fn(*args, **kwargs)
+
+        # for k, v in kwargs.items():
+        #     ret = fn(*args, **kwargs)
 
         return ret
 

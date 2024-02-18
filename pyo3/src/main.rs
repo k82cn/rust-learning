@@ -2,29 +2,44 @@ use std::fs::File;
 use std::io::prelude::*;
 
 use pyo3::prelude::*;
-use pyo3::types::PyTuple;
+use pyo3::types::{PyBytes, PyTuple};
 
 fn main() -> PyResult<()> {
     Python::with_gil(|py| {
-        let mut f = File::open("service_code.pkl")?;
-        let mut buffer = Vec::new();
-
-        // read the whole file
-        f.read_to_end(&mut buffer)?;
-
         let dill = py.import("dill")?;
         let load_fn = dill.getattr("loads")?;
-        let args = PyTuple::new(py, &[buffer]);
 
-        let _task_fn = load_fn.call(args, None)?;
+        println!("Load task code");
+        let mut f: File = File::open("service_code.pkl")?;
+        let mut buffer = Vec::new();
+        f.read_to_end(&mut buffer)?;
 
-        // let mut f = File::open("service_input.pkl")?;
-        // let mut input = Vec::new();
+        let task_code = PyBytes::new(py, &buffer);
+        let task_code = PyTuple::new(py, &[task_code]);
+        let task_fn: Py<PyAny> = load_fn.call(task_code, None)?.into();
 
-        // // read the whole file
-        // f.read_to_end(&mut input)?;
+        println!("Load task args");
+        let mut f = File::open("service_args.pkl")?;
+        let mut task_args = Vec::new();
+        f.read_to_end(&mut task_args)?;
 
-        // task_fn.call(args, None);
+        let task_args = PyBytes::new(py, &task_args);
+        let task_args = PyTuple::new(py, &[task_args]);
+        let args = load_fn.call(task_args, None)?;
+        let args: &PyTuple = args.extract()?;
+
+        println!("Load task kwargs");
+        let mut f = File::open("service_kwargs.pkl")?;
+        let mut task_kwargs = Vec::new();
+        f.read_to_end(&mut task_kwargs)?;
+
+        let task_kwargs = PyBytes::new(py, &task_kwargs);
+        let task_kwargs = PyTuple::new(py, &[task_kwargs]);
+        let kwargs = load_fn.call(task_kwargs, None)?;
+        let kwargs = kwargs.extract()?;
+
+        println!("Execute task");
+        let _ = task_fn.call(py, args, Some(kwargs))?;
 
         Ok(())
     })

@@ -16,7 +16,15 @@ fn main() -> PyResult<()> {
         let load_fn = dill.getattr("loads")?;
         let args = PyTuple::new(py, &[buffer]);
 
-        load_fn.call(args, None)?;
+        let _task_fn = load_fn.call(args, None)?;
+
+        // let mut f = File::open("service_input.pkl")?;
+        // let mut input = Vec::new();
+
+        // // read the whole file
+        // f.read_to_end(&mut input)?;
+
+        // task_fn.call(args, None);
 
         Ok(())
     })

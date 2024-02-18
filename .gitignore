@@ -20,3 +20,7 @@ target/
 
 # Python cache
 __pycache__/
+
+# Python pickle file
+
+*.pkl

@@ -39,7 +39,22 @@ fn main() -> PyResult<()> {
         let kwargs = kwargs.extract()?;
 
         println!("Execute task");
-        let _ = task_fn.call(py, args, Some(kwargs))?;
+        let main = py.import("__main__")?;
+        let globals = main.dict();
+
+        let random = py.import("random")?;
+        globals.set_item("random", random)?;
+
+        let math = py.import("math")?;
+        globals.set_item("math", math)?;
+
+        let res = task_fn.call(py, args, Some(kwargs))?;
+
+        println!("{}", res);
+
+        let dump_fn = dill.getattr("dumps")?;
+        let res = PyTuple::new(py, &[res]);
+        let _: Py<PyAny> = dump_fn.call(res, None)?.into();
 
         Ok(())
     })

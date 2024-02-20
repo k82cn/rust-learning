@@ -1,4 +1,5 @@
 import dill
+import subprocess
 
 class Future:
     def __init__(self):
@@ -15,18 +16,10 @@ def service(fn):
         with open('service_args.pkl', 'wb') as file:
             dill.dump(args, file)
 
-        with open('service_kwargs.pkl', 'wb') as file:
-            dill.dump(kwargs, file)
+        subprocess.run(["./target/debug/python-shim"])
 
-        with open('service_input.pkl', 'wb') as file:
-            dill.dump((args, kwargs), file)
-
-        ret = fn(*args, **kwargs)
-
-        # for k, v in kwargs.items():
-        #     ret = fn(*args, **kwargs)
-
-        return ret
+        with open('service_output.pkl', 'rb') as file:
+            return dill.load(file)
 
     return service_future
 

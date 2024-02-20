@@ -18,6 +18,5 @@ def pi(n):
 
     return sum
 
-# print(add(4, y=5))
-
 print(pi(10))
+

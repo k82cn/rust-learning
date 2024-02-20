@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::prelude::*;
 
+use bytes::Bytes;
 use pyo3::prelude::*;
 use pyo3::types::{PyBytes, PyTuple};
 
@@ -50,11 +51,15 @@ fn main() -> PyResult<()> {
 
         let res = task_fn.call(py, args, Some(kwargs))?;
 
-        println!("{}", res);
-
         let dump_fn = dill.getattr("dumps")?;
         let res = PyTuple::new(py, &[res]);
-        let _: Py<PyAny> = dump_fn.call(res, None)?.into();
+
+        let any: &PyAny = dump_fn.call(res, None)?;
+        let py_bytes: &PyBytes = any.downcast()?;
+        let bytes: Bytes = Bytes::copy_from_slice(py_bytes.as_bytes());
+
+        let mut file = File::create("service_output.pkl")?;
+        file.write_all(&bytes)?;
 
         Ok(())
     })
